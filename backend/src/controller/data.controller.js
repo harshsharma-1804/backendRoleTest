@@ -6,23 +6,27 @@ import {Data} from '../models/data.model.js';
 const createSample= asyncHandler(async(req,res)=>{
     const {price, volume} = req.body
 
-    if(!price || !volume){
+    // console.log(price)
+    if(!price){
         throw new ApiError(400, 'Invalid input')
     }
 
+    if(!volume || !volume.h24 || !volume.h6 || !volume.h1 || !volume.m5){
+       throw new ApiError(400, 'Invalid input x')
+    }
+
     const {h24,h6,h1,m5} = volume
+    
+    const newdata = new Data({price,volume: {h24,h6,h1,m5}})
+    await newdata.save()
 
-
-    const data = new Data({price,volume:{h24,h6,h1,m5}})
-    await data.save()
-
-    if(!data){
+    if(!newdata){
         throw new ApiError(500, 'Internal server error')
     }
 
     return res
     .status(201)
-    .json(new ApiResponse(201, data, 'Data created'))
+    .json(new ApiResponse(201, newdata, 'Data created'))
 })
 
 const getSample = asyncHandler(async(req,res)=>{
@@ -41,10 +45,14 @@ const getSample = asyncHandler(async(req,res)=>{
 const updateSample = asyncHandler(async(req,res)=>{
     const {price, volume} = req.body
 
-    if(!price || !volume){
+    if(!price){
         throw new ApiError(400, 'Invalid input')
     }
 
+    if(!volume || !volume.h24 || !volume.h6 || !volume.h1 || !volume.m5){
+        throw new ApiError(400, 'Invalid input x')
+     }
+ 
     const {h24,h6,h1,m5} = volume
 
     const data = await Data.findByIdAndUpdate(id,{price,volume:{h24,h6,h1,m5}},{new:true})
